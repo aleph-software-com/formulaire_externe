@@ -5,7 +5,7 @@ from PIL import Image
 from io import BytesIO
 
 # Configuration API Rhino
-API_URL = "https://dev.rhinocertification.com/api"
+API_URL = "https://app.rhinocertification.com/api"
 API_KEY = st.secrets.get("RHINO_API_KEY", "")
 
 # Configuration API Google Maps
