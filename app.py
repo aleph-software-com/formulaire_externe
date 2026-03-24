@@ -47,7 +47,7 @@ def compress_image(image_bytes: bytes) -> str:
 
 
 # Interface utilisateur Streamlit
-st.title("Formulaire de dépôt Rhino Certification pour INFINY")
+st.title("Formulaire de dépôt Rhino Certification pour ENERGIE RESPONSABLE")
 
 client_name = st.text_input("Nom du client")
 address = st.text_input("Adresse complète (ex: 123 rue Exemple, Paris, France)")
