@@ -7,6 +7,7 @@ from io import BytesIO
 # Configuration API Rhino
 API_URL = "https://app.rhinocertification.com/api"
 API_KEY = st.secrets.get("RHINO_API_KEY", "")
+CLIENT_COMPANY_ID = st.secrets.get("CLIENT_COMPANY_ID", "")
 
 # Configuration API Google Maps
 GOOGLE_API_KEY = st.secrets.get("GOOGLE_API_KEY", "")
@@ -29,6 +30,22 @@ def get_coordinates(address):
     return None, None
 
 
+def fetch_credits():
+    """Fetch available photo credits for the company."""
+    if not CLIENT_COMPANY_ID:
+        return None
+    try:
+        resp = requests.get(
+            f"{API_URL}/purchases/company/{CLIENT_COMPANY_ID}/photo-credits",
+            timeout=10
+        )
+        if resp.ok:
+            return resp.json()
+    except requests.RequestException:
+        pass
+    return None
+
+
 def compress_image(image_bytes: bytes) -> str:
     """Compress image and return base64 encoded string."""
     img = Image.open(BytesIO(image_bytes))
@@ -47,7 +64,18 @@ def compress_image(image_bytes: bytes) -> str:
 
 
 # Interface utilisateur Streamlit
-st.title("Formulaire de dépôt Rhino Certification pour ENERGIE RESPONSABLE")
+st.title("Formulaire de dépôt Rhino Certification pour Elite Renovation")
+
+# Affichage des crédits disponibles
+credits_placeholder = st.empty()
+credits_data = fetch_credits()
+if credits_data:
+    credits_placeholder.info(
+        f"📸 Crédits photos disponibles : **{credits_data['free_photo_credits']}** — "
+        f"Packs disponibles : **{credits_data['available_packs_count']}**"
+    )
+elif CLIENT_COMPANY_ID:
+    credits_placeholder.warning("Impossible de récupérer les crédits disponibles.")
 
 client_name = st.text_input("Nom du client")
 address = st.text_input("Adresse complète (ex: 123 rue Exemple, Paris, France)")
@@ -168,3 +196,11 @@ if st.button("Soumettre"):
 
         data = finalize_response.json()
         st.success("Données envoyées avec succès !")
+
+        # Rafraîchir les crédits après soumission réussie
+        updated_credits = fetch_credits()
+        if updated_credits:
+            credits_placeholder.info(
+                f"📸 Crédits photos disponibles : **{updated_credits['free_photo_credits']}** — "
+                f"Packs disponibles : **{updated_credits['available_packs_count']}**"
+            )
